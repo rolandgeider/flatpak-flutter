@@ -133,9 +133,6 @@ def _process_sources(module, fetch_path: str, releases_path: str, no_shallow: bo
                     tag = ref
                     sdk_path = dest
 
-            if source['type'] == 'patch' and '.flutter.patch' in str(source['path']):
-                idxs.append(idx)
-
             if source['type'] == 'dir' and 'path' in source:
                 print(f'Warning: Skipping dir: {source["path"]}', file=sys.stderr)
 
@@ -158,17 +155,22 @@ def _process_sources(module, fetch_path: str, releases_path: str, no_shallow: bo
             dest = f'{fetch_path}/{source["dest"]}' if 'dest' in source else fetch_path
 
             if source['type'] == 'patch':
-                if not 'path' in source:
+                if not 'path' in source and not 'paths' in source:
                     continue
 
-                path = str(source['path'])
+                paths = list(source['paths']) if 'paths' in source else [source['path']]
 
                 if os.path.isdir(dest):
-                    print(f'Apply patch: {path}')
-                    command = f'(cd {dest} && patch -p1) < {path}'
-                    subprocess.run([command], stdout=subprocess.PIPE, shell=True, check=True)
+                    for path in paths:
+                        if '.flutter.patch' in str(path):
+                            idxs.append(idx)
+
+                        print(f'Apply patch: {path}')
+                        command = f'(cd {dest} && patch -p1) < {path}'
+                        subprocess.run([command], shell=True, check=True)
                 else:
-                    print(f'Warning: Skipping patch {path}, directory {dest} does not exist', file=sys.stderr)
+                    print(f'Warning: Skipping patch file(s) {", ".join(paths)}, directory {dest} does not exist',
+                          file=sys.stderr)
             elif source['type'] == 'git' and 'commit' not in source:
                 source['commit'] = get_commit(dest)
 
