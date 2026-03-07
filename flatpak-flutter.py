@@ -26,7 +26,7 @@ SOURCES = 'generated/sources'
 PATCHES = 'generated/patches'
 
 TEMPLATE_FLUTTER_VERSION = '3.41.4'
-DEFAULT_RUST_VERSION = '1.93.0'
+DEFAULT_RUST_VERSION = '1.94.0'
 RUSTUP_PATH = '/var/lib/rustup'
 
 __version__ = '0.14.1'
